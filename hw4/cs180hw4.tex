@@ -1,0 +1,178 @@
+\documentclass[12pt]{article}
+\usepackage[top=0.5in, left=0.5in, right=0.5in, bottom=00.5in]{geometry}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+\title{\textsc{Homework 4}}
+\author{Henry Trinh}
+
+\begin{document}
+\maketitle
+
+\newpage
+\section*{Problem 1}
+\subsection*{Part A}
+Given $n=5$ days, $s=\{50,\ 10,\ 5,\ 3,\ 2\}$, and $x=\{100,\ 100,\ 100,\ 100,\ 100\}$,
+we have an example where the optimal solution includes at least $2$ reboots. The optimal
+solution is to reset in days 2 and 4. This gives us a solution of $50 + 0 + 50 + 0 + 50 = 150$
+terabytes processed.
+
+\subsection*{Part B}
+\begin{algorithm}
+\caption{Return max amount of terabytes that can be processed}
+\begin{algorithmic}[1]
+\Function{TerabytesProcessed}{$x$, $s$}
+    \State $n \gets $ length of $x$
+    \State $arr \gets $ initalized array of $0$'s of length $n$
+    \State $ptr \gets 0$
+    \For {$i$ in the range of $0...n-1$}
+        \State $base1 \gets arr[i - 2]$ if $i > 1$ otherwise $0$
+        \State $base2 \gets arr[i - 1]$ if $i > 0$ otherwise $0$
+        \State
+        \State $temp1 \gets base1 + min(x[i],\ s[0])$
+        \State $temp2 \gets base2 + min(x[i],\ s[ptr])$ 
+        \State
+        \State $arr[i] \gets max(temp1,\ temp2)$
+        \If {$arr[i]==temp1$}
+            \State $ptr \gets 0$
+        \EndIf
+        \State $ptr \gets ptr + 1$
+    \EndFor
+    \State return last element in $arr$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+This algorithm works using the concept of dynamic programming. We can solve this by using a bottom
+up approach to build the maximum value up until the last day. We can classify each day as a subproblem
+where there are two options. The first case is where we restart the computer the day before, or continue
+processing the data from the day before. We can calculate and see which of the two options gives the maximal 
+value for the current day. This method can be continued for the following days and takes into account of 
+whether or not it's better to reset on a day based on the day after.
+\newline
+\newline
+This algorithm has a linear time complexity of $O(n)$ since the algorithm iterates through the number of $n$ days.
+
+\newpage
+\section*{Problem 2}
+\begin{algorithm}
+\caption{Return minimum number of characters required to make string a palindrome}
+\begin{algorithmic}[1]
+    \State $s \gets $ given string
+    \State $n \gets $ length of $s$
+    \State $dp \gets $ 2d array of size $n$ x $n$ initalized with null values
+    \ForAll {$i$ in the range from $0...n-1$}
+        \State $dp[i][i] \gets 0$
+    \EndFor
+    \ForAll {$i$ in range from $n-2...0$}
+        \ForAll {$j$ in the range from $i+1..n-1$}
+            \If {$s[i] == s[j]$}
+                \If {$j - i == 1$}
+                    \State $dp[i][j] \gets 0$
+                \Else
+                    \State $dp[i][j] \gets dp[i + 1][j - 1]$
+                \EndIf
+            \Else
+                \State $dp[i][j] \gets min(dp[i+1][j],\ dp[i][j-1]) + 1$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State return $dp[0][n - 1]$
+\end{algorithmic}
+\end{algorithm}
+This algorithm uses a bottom up approach to find the number of insertions needed to make a string
+a palindrome. We can utilize a two pointer approach to mark the current substring/subproblem we are 
+examining of the given string. We can start with the base cases such that a sole subproblem/substring of 
+length 1 takes 0 insertions since a sole letter is a palindrome itself. Our second base case is if the length
+of the subproblem is of length 2, in which case if both letters are equal, it takes 0 insertions, and otherwise
+it will take 1 insertion. For any given substring, we have two cases. If the first and last letters are equal, 
+then the number of insertions is equal to the number of insertions of the substring without those two letters 
+since the two letters being equal guarantees that they do not affect the number of insertions. Otherwise, 
+in the second case where they are not equal, the number of insertions will be the minimum of either 
+the substring of (left + 1, right) or (left, right - 1) and adding 1 to the minimum since the character left out
+needs to be accounted for. Through this, we can continue to fill out a 2d array of size $n$ x $n$, which stores
+the answers and builds up from the base answers in the array.
+\newline
+
+This algorithm has a time complexity of $O(n^2)$ since this algorithm fills out an array of 
+size $n^2$. The initial loop to fill out the base cases only take a time complexity of $O(n)$, so it does not affect 
+the final time complexity.
+
+\newpage
+\section*{Problem 3}
+\begin{algorithm}
+\caption{find maximum cardinality set in tree $T$}
+\begin{algorithmic}
+\Function{findMaxCardSet}{tree $T$}
+    \State $dp \gets $ initialize hashmap from node to integer
+    \State $root \gets $ root of tree $T$
+\EndFunction
+\State
+\Function{helper}{vertex $u$, hashmap $dp$}
+    \If {$u \in dp$}
+        \State return $dp[u]$
+    \EndIf
+    \If {$u$ has no children}
+        \State $dp[u] = 1$
+        \State return $1$
+    \EndIf
+    \State
+    \State $temp1 \gets 0$
+    \State $temp2 \gets 0$
+    \ForAll{children $v$ of $u$}
+        \State $temp1 += helper(v,\ dp)$
+        \ForAll {children $w$ of $v$}
+            \State $temp2 += helper(w,\ dp)$
+        \EndFor
+    \EndFor
+    \State $currMax \gets max(temp1,\ temp2 + 1)$
+    \State $dp[u] \gets currMax$
+    \State return $currMax$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+This algorithm takes a top down dynamic programming approach by calculating the maximal cardinal 
+set in each subtree and saving the result in a hash map to prevent recalculation of already calculated 
+subtrees. At the smallest subproblem/subtree is a single vertex in the tree without any children. 
+In this case, the size of the maximum cardinality set in that subtree is 1 since the vertex itself is 
+a maximal set. We can divide every other subtree with children into two cases. The first case is where the 
+size of the maximal set is the sum of the size of all the maximal sets of its children. The second case is 
+the same, except with its grandchildren, and added 1 to the number to represent the additional vertex, 
+which is the root of the current subtree. The size of the max cardinality set of the current subtree would 
+be the maximum of these two cases. This pattern can be repeated for every single vertex in the tree and be 
+used to finally determine the size of the maximum cardinality set in the tree.
+\newline
+
+The runtime of this algorithm is $O(V)$ since this algorithm visits each node once and does not recalculate
+the algorithm for each vertex that already has been already calculated.
+
+\newpage
+\section*{Problem 4}
+We can prove that the vertex cover problem $<=_p$ hitting set problem by giving a polynomial time reduction from
+the vertex cover problem. Given a graph $G(V,\ E)$ of the vertex cover problem, we can construct a hitting set problem
+by constructing a set $B = {u, v}$ for every edge $(u,\ v) \in E$ and the value of $k$ that remains equal for both problems.
+With this in mind, we can reach the conclusion that $G$ has a vertex cover of size $k$ if there is a hitting set $H$ of size at most $k$ of sets 
+$B_i$.
+\newline
+\newline
+A further proof is as follows. If there is a graph $G$ with vertex cover $VC$, then for every edge $(u,\ v)$, either 
+$u \in VC$ or $v \in VC$. This means in a hitting set situation $\{u,\ v\} \cap VC \neq \emptyset$, which means that 
+$H$ is a hitting set of size $k$. This also works conversely, where for a given hitting set $H$, every edge is covered
+by the hitting set $H$, and $H$ is a hitting set of graph $G$ of size $k$.
+
+\newpage
+\section*{Problem 5}
+Given a graph $G(V,\ E)$, we can proceed to prove that the 3-colorable problem $<=_p$ the 4-colorable problem. Given a 
+second graph identical to $G$, $G^\prime(V^\prime,\ E^\prime)$, we can introduce a new vertex $u$ such that $V \cup \{u\} = V^\prime$.
+We can also assume that $u$ has an edge connected to every existing vertex $v$ in $G$ such that 
+$E^\prime = E \cup \{(u,\ v) \forall v \in V\}$. 
+\newline
+\newline
+If there is a 3-coloring $col = \{0,\ 1,\ 2\}$ of $G$, we can also define $col^\prime = \{0,\ 1,\ 2,\ 3\}$ as a 4-coloring.
+We can define their relationship such that $\forall v \in V$, $col^\prime(v) = col(v)$ and $col^\prime(u) = 3$. We can then associated
+$col^\prime$ as the 4-coloring of $G^\prime$. This shows us that for any graph $G$ that is 3-colorable, $G^\prime$ can also be 4-colorable.
+We can also show the converse of this, where given the same graphs, since the color 3 is only assigned to $u$ and it is 
+connected to all vertices in $V$, only $u$ has the fourth color. This shows that the 3-colorable $col$ is a 3-colorable of $G$. This also shows
+that if $G^\prime$ is 4-colorable, then $G$ is colorable by 4 colors.
+
+\end{document}

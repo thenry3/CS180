@@ -1,0 +1,200 @@
+\documentclass[12pt]{article}
+\usepackage[top=0.5in, left=0.5in, bottom=0.5in, right=0.5in]{geometry}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+\title{\textsc{Homework 3}}
+\author{Henry Trinh}
+
+\begin{document}
+\maketitle
+
+\newpage
+\section*{Problem 1}
+\vspace*{-0.3in}
+\begin{algorithm}
+\caption{Determine if tree $T$ is still a MST of graph $G$}
+\begin{algorithmic}[1]
+    \If{$w^\prime <= w$}
+        \State return $true$
+    \EndIf
+    \State
+    \State $(u,v) \gets $ edge in $T$ whose weight changed from $w$ to $w^\prime$
+    \State $T^\prime \gets T$ without edge $(u,v)$ 
+    \State $A \gets$ empty set 
+    \State $B \gets$ empty set 
+    \State $QA \gets$ empty queue initialized with one element $u$
+    \State $QB \gets$ empty queue initialized with one element $v$
+    \State
+    \While{$QA$ not empty}
+        \State $x \gets$ pop $QA$
+        \State push $x$ onto $A$
+        \ForAll{vertex $z$ adjacent to $x$ in tree $T^\prime$ and $\notin A$}
+            \State push $z$ onto $QA$
+        \EndFor
+    \EndWhile
+    \State 
+    \While{$QB$ not empty}
+        \State $x \gets$ pop $QB$
+        \State push $x$ onto $B$
+        \ForAll{vertex $z$ adjacent to $x$ in tree $T^\prime$ and $\notin B$}
+            \State push $z$ onto $QB$
+        \EndFor
+    \EndWhile
+    \State
+    \For{edge $(j, k)$ in $G$}
+        \If{($j$ in $A$ and $k$ in $B$) or ($j$ in $B$ and $k$ in $A$)}
+            \If{weight of edge $(j,k)$ is less than $w^\prime$}
+                \State return $false$
+            \EndIf
+        \EndIf
+    \EndFor
+    \State return $true$
+\end{algorithmic}
+\end{algorithm}
+If a tree edge $(u,v) \in T$ changes its weight from $w$ to $w^\prime$, we can consider
+two possible cases. The first one is if $w^\prime <= w$, which means that $T$ is still a 
+MST because the total weight of the MST stays the same or improves, so there is no other possible
+tree that would replace $T$ as the MST. 
+\newline
+\newline
+The second case is if $w^\prime > w$, where we have to consider
+the $T$ might not remain as a MST. Given that an MST is acylic, if we remove any edge from the MST,
+the two components, $A$ and $B$, do no overlap in vertices or edges, and that they are MSTs themselves if we consider
+the graphs formed from $G$ that only include the vertices in their respective components. This can be proved
+by contradiction, because if a component $A$ or $B$ is not a MST of their own graphs, then $A$ and $B$ put together to 
+create the tree $T$ would not be a MST either. Given this, if there is an edge $(j,k) \in G$ with weight $p$ that connects $A$ and $B$ such that 
+$p<w^\prime$, then that means tree $T$ is no longer an MST since there is another tree that would have a smaller weight 
+than $T$. This solution is linear $O(m)$ because it only performs linear operations.
+
+\newpage
+\section*{Problem 2}
+\subsection*{Algorithm A}
+$O(n^2log(n))$
+\newline
+Using master's theorem, we get that $a=9$ since we divide the problem into $9$
+subproblems, $b=3$ since each subproblem is $1/3$ the size, and $k=2$ since combining
+the solutions take quadratic time. We have that $r=9/(3^2)=1$, which means that the
+time complexity for this algorithm is $O(n^klog(n))$, where $k=2$.
+\subsection*{Algorithm B}
+$O(2^n)$
+\newline
+Since this algorithm recursively divides the problem into subproblems of size n - 1, it will
+take n divisions to fully go through the algorithm. Each of these divisions yields 2 subproblems.
+Since there will be two subproblems for every division, which will be n times, the algorithm
+will take $O(2^n)$. Since combining the solutions take constant time, we can ignore that factor.
+\subsection*{Algorithm C}
+$O(n^{log_25})$
+\newline
+Using master's theorem, we get that $a=5$ since we divide the problem into $5$ 
+subproblems, $b=2$ since each subproblem is $1/2$ the size, and $k=1$ since the solutions
+are combined in linear time. We have that $r=5/(2^1)>1$, which means the time complexity
+for this algorithm is $O(n^{log_ba})$ where $a=5$ and $b=2$. 
+
+\newpage
+\section*{Problem 3}
+\begin{algorithm}
+\caption{Find local minimum of $T$}
+\begin{algorithmic}[1]
+\Function{findLocalMin}{$root$}
+    \State return $Helper(root)$
+\EndFunction
+\State
+\Function{Helper}{vertex $v$}
+    \State $parent \gets $ parent of $v$
+    \State $leftC \gets $ left child of $v$
+    \State $rightC \gets $ right child of $v$
+    \State
+    \If {$parent$ is $null$}
+        \State $parentVal \gets \infty$
+    \Else
+        \State $parentVal \gets probe(parent)$
+    \EndIf
+    \If {$v$ has no children}
+        \State $leftVal \gets \infty$
+        \State $rightVal \gets \infty$
+    \Else
+        \State $leftVal \gets probe(leftC)$ 
+        \State $rightVal \gets probe(rightC)$
+    \EndIf
+    \State
+    \If {$probe(v)$ is less than $parentVal$, $leftVal$, and $rightVal$}
+        \State return $v$
+    \EndIf
+    \State
+    \If {$leftVal$ is less than $rightVal$}
+        \State return $Helper(leftC)$
+    \EndIf
+    \State return $Helper(rightC)$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+While there can be multiple local minimums, we would only need to find one. By recursively 
+iterating through a binary tree down the smallest valued child out of the two for a node, 
+we would be guaranteed to find a local minimum. This algorithm takes $O(log\ n)$ because
+iterating through one branch of a binary tree is a logarithmic operation.
+\newline
+\newline
+This approach can be proved by induction. Given a single vertex, which would be a leaf of the binary
+tree it resides in, its status as a local minimum depends on its parent. If we add two children (to keep
+the status of a complete binary tree), we have the case that it is not the local minimum. If both
+children are greater than the current vertex, the vertex would remain a local min if it was before. If at least one
+child is smaller than the current vertex, going down the child with the smaller value would yield it as 
+a local minimum. If the current vertex is greater than its parent and the two children are greater than the vertex,
+the algorithm would have stopped at the parent and returned it. These cases can be cycled as the binary tree grows.
+
+\newpage
+\section*{Problem 4}
+\begin{algorithm}
+\caption{Find length of largest overlap among all pairs of intervals}
+\begin{algorithmic}[1]
+\Function{findLargestOverlap}{$intervals$}
+    \State $sortedIntervals \gets $ sort $intervals$ by increasing $s_i$
+    \State return $Helper(sortedIntervals)$, 
+\EndFunction
+\State
+\Function{Helper}{$intervals$}
+    \If {$length(intervals)$ is $2$}
+        \State return $overlap(interval[0], interval[1])$
+    \EndIf
+    \If {$length(intervals)$ is less than $2$}
+        \State return $0$
+    \EndIf
+    \State $mid \gets length(intervals) / 2$ 
+    \State $topStart \gets s$ of $intervals[mid + 1]$ 
+    \State $bottom \gets intervals$ from indexes $0$ to $mid$
+    \State $top \gets intervals$ from indexes $mid+1$ to $length(intervals) - 1$
+    \State
+    \State $curr \gets max(Helper(bottom),\ Helper(top))$
+    \State $longestIntervalOver \gets $ interval in $bottom$ with largest positive $f - topStart$
+    \If {$longestIntervalOver$ is $null$}
+        \State return $curr$
+    \EndIf
+    \State
+    \State $maxMidOverlap \gets 0$
+    \ForAll {intervals $itrvl \in top$}
+        \State $maxMidOverlap \gets max(maxMidOverlap,\ overlap(itrvl,\ longestIntervalOver))$
+    \EndFor
+    \State return $max(maxMidOverlap,\ curr)$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+By sorting the list of intervals, which takes a $O(n\ log\ n)$ operation, we can utilize a divide-and-conquer
+algorithm to find overlaps between pairs of intervals that are close to each other. By doing this, we can
+have a divide operation of $O(log\ n)$. The algorithm also takes into account of overlaps between different 
+divisions. By considering the longest interval from the left division that overlaps into the right division,
+we can calculate the overlaps that it has with all the intervals in the right division in a linear time complexity.
+So for each division, there would be a linear operation of $O(log\ n)$. This brings the time complexity to 
+$O(n\ log\ n)$. As we "conquer", we compare the overlaps between the left, right, and "merged" divisions and 
+return the largest.
+\newline
+\newline
+Using master's theorem we can calculate the time complexity of the divie-and-conquer algorithm part of our solution.
+We get that $a=2$ because we divide the problem into 2 subproblems recursively. We also get that $b=2$ because each 
+subproblem is $1/2$ the size of the problem. $k=1$ since combining solutions is linear time complexity when we compare
+if there are any overlaps between an interval on the left and interval on the right subproblem. We have $r=2/(2^1)=1$, 
+which means that the time complexity for this algorithm is in the form for 
+$O(n^klog(n))$, where $k=1$.
+
+
+\end{document}

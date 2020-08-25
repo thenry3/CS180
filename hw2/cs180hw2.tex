@@ -1,0 +1,188 @@
+\documentclass[12pt]{article}
+\usepackage[left=0.5in,right=0.5in,top=0.5in,left=0.5in]{geometry}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+\title{\textsc{Homework 2}}
+\author{Henry Trinh}
+
+\begin{document}
+\maketitle
+
+\newpage % PROBLEM 1 %
+\section*{Problem 1}
+We can prove that in a binary tree, the number of nodes with two 
+children is exactly one less than the number of leaves using induction.
+\subsection*{Proof}
+For our base statement, we look at a binary tree with only one node, the root node.
+In this example, the statement is true because there is only one leaf and no full nodes.
+\newline
+\newline
+For any positive integer $N$, suppose that the statement is true for all binary trees
+with $N$ nodes. Given a binary tree $B$ with $N+1$ nodes, say we have a leaf $L$ with
+parent $L^\prime$ and remove the leaf $L$, giving us the binary tree $B^\prime$ with 
+$N$ nodes. We then have two cases in which $L^\prime$ has two children or one child in 
+$B$:
+\begin{enumerate}
+    \item In $B^\prime$, if $L^\prime$ is a leaf, then $B^\prime$ has the same number of leaves
+    as $B$ since $L$ is removed from the tree and $L^\prime$ is converted from a node to 
+    a leaf. The number of nodes with two children stay the same between $B$ and $B^\prime$ 
+    since $L^\prime$ only had one child in $B$ and did not count as a full node in $B$.
+
+    \item If $L^\prime$ has one child in $B^\prime$, then $B^\prime$ has one less leaf and one less 
+    node with two children than $B$ since $L$ was removed and $L^\prime$ is no longer counted as
+    a full node with two children.
+\end{enumerate}
+In both of these cases the difference of the number of nodes with two children and number
+of leaves stays the same between $B^\prime$ and $B$, where the difference is $1$. By 
+induction, the above statement is true for any positive integer $N$.
+
+\newpage
+\section*{Problem 2}
+
+\begin{algorithm}
+\caption{Shortest path counts for each node}
+\begin{algorithmic}[1]
+    \State $dist \gets $ initalize array of length $n$ with value of $Null$
+    \State $paths \gets $ initialize array of length $n$ with $0$
+    \State $dist[src] = 0$
+    \State $paths[src] = 1$
+    \State initalize empty Queue $Q$
+    \State push $src$ onto $Q$
+    \While {$Q$ is not empty}
+        \State $u \gets $ dequeue $Q$
+        \ForAll {$v$ adjacent to $u$}
+            \If {$dist[v]==Null$}
+                \State $dist[v] \gets dist[u]+1$
+                \State $paths[v]==paths[u]$
+                \State push $v$ onto $Q$
+            \Else
+                \If {$dist[v]==dist[u] + 1$}
+                    \State $paths[v] += paths[u]$
+                \EndIf
+            \EndIf
+        \EndFor 
+    \EndWhile
+    \State return $paths$
+\end{algorithmic}
+\end{algorithm}
+\subsection*{Explanation}
+This algorithm is correct because it visits every node by traversing every edge using BFS while 
+keeping track of the distance it takes to get to the node from the source node as well as the number
+of shortest paths for every node. Since this is an unweighted graph, when a previous node is revisited,
+the proposed distance will always be greater than or equal to the recorded shortest distance. Because of this property
+of BFS to traverse by "levels", we only need to check if the node is unvisited or if the proposed distance
+is equal to the recorded shortest distance. If the node is unvisited, it inherits the number of paths as from
+the previous node because each of those paths from the previous node only has one direction to go. If the
+proposed distance is the same as the reocrded distance, then the number of paths from the previous node is 
+added to the current number of paths since it adds a new direction and alternative routes. We can continue
+this pattern until there are no more unvisited nodes.
+
+\newpage
+\section*{Problem 3}
+
+\subsection*{Part A}
+\vspace{-5mm}
+\begin{algorithm}
+\caption{Find diameter of G}
+\begin{algorithmic}[1]
+    \State $shortest \gets$ matrix with $n$ rows and columns initialized with all values as infinity
+    \ForAll {vertex $v$}
+        \State $shortest[v][v] \gets 0$
+        \State initialize queue $Q$
+        \State push $v$ onto $Q$
+        \State initalize set $S$
+        \While {$Q$ is not empty}
+            \State $u \gets $ dequeue $Q$
+            \ForAll {$w$ adjacent to $u$}
+                \If {$w$ in $S$}
+                    \State put $w$ in $S$
+                    \State $shortest[v][w] \gets shortest[v][u] + 1$
+                    \State push $w$ in $Q$
+                \EndIf
+            \EndFor
+        \EndWhile
+    \EndFor
+    \State return $max(shortest)$
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+\section*{Problem 3}
+
+\subsection*{Part B}
+\vspace{-5mm}
+\begin{algorithm}
+\caption{Find diameter of T}
+\begin{algorithmic}[1]
+    \Function{TreeDiameter}{root}
+        \If {$root$ has no children}
+            \State return $0$
+        \EndIf
+        \State $max1 \gets 0$
+        \State $max2 \gets 0$
+        \ForAll {child $c$ of node $root$}
+            \State $dist \gets TreeDiameter(c) + 1$
+            \If {$dist > max1$ or $dist > max2$}
+                \If {$max1 > max2$}
+                    \State $max2 \gets dist$
+                \Else
+                    \State $max1 \gets dist$
+                \EndIf
+            \EndIf
+        \EndFor
+        \State return $max1 + max2$
+    \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+\section*{Problem 4}
+\subsection*{Part A}
+\begin{algorithm}
+\caption{Test if DAG is semi-connected}
+\begin{algorithmic}[1]
+    \State $topArr \gets $ array of vertexes returned from topological sort on $G$
+    \For {$i$ in $topArr$}
+        \If {$(topArr[i],topArr[i+1]) \notin E$}
+            \State return $False$
+        \EndIf
+    \EndFor
+    \State return $True$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{Part B}
+We have a graph $G^\prime$ constructed from Kosaraju's algorithm
+performed on graph $G$ such that $G^\prime = (V^\prime, E^\prime)$ where $V^\prime$
+has $K$ nodes $v_1^\prime,...,v_k^\prime$ that are each a Strongly Connected Component (SCC)
+that is maximal, and $(v_i^\prime, v_j^\prime) \in E^\prime$ if and only if there exists
+a edge connecting a pair of nodes in $v_i^\prime$ and $v_j^\prime$.
+\newline
+\newline
+To prove that $G^\prime$ is a Directed Acyclic Graph, we can prove by contradiction.
+Suppose that $G^\prime$ is a directed graph with a cycle between two nodes $v_i^\prime$
+and $v_k^\prime$, which are SCCs. This implies that there exists a path of nodes in $G$ 
+and $v_k^\prime$ such that if the nodes are added to $v_i^\prime$, $v_i^\prime$ would 
+remain a Strongly Connected Component. This is a contradiction to the fact that all nodes
+in $V^\prime$ are maximal SCCs. This means that graph $G^\prime$ must have no cycles, 
+therefore making it a DAG.
+
+\subsection*{Part C}
+\begin{algorithm}
+\caption{Test if directed graph G is semi-connected}
+\begin{algorithmic}
+    \State $S \gets $ set of SCCs of $G^\prime$ returned from Kosajuru's algorithm performed on $G$
+    \State $topArr \gets $ array of SCCs returned from topological sort on the graph made by $S$
+    \For {$i$ in $topArr$}
+        \If {$(topArr[i],topArr[i+1]) \notin E^\prime$}
+            \State return $False$
+        \EndIf
+    \EndFor
+    \State return $True$
+\end{algorithmic}
+\end{algorithm}
+
+
+\end{document}
+
